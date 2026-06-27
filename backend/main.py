@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from analyzer.dom import extract_dom
 
 from analyzer.browser import capture_website
 
@@ -26,5 +27,9 @@ def scan(request:URLRequest):
     result = capture_website(
         request.url
     )
+    dom_data = extract_dom(result["html"])
 
-    return result
+    return {
+    "screenshot": result["screenshot"],
+    "dom": dom_data
+    }
