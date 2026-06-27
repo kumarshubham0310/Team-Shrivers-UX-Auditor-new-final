@@ -2,7 +2,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 
-def crawl_site(page, max_pages=50):
+def crawl_site(page, max_pages=8):
 
     visited = set()
 

@@ -12,6 +12,7 @@ from analyzer.journey import analyze_journey
 from analyzer.scoring import calculate_score
 from analyzer.recommendations import generate_recommendations
 from analyzer.report import generate_report
+from analyzer.ai_suggestions import generate_ai_improvements
 
 app = FastAPI()
 
@@ -107,8 +108,21 @@ def scan(request: URLRequest):
 
         print("✅ Recommendations")
         print(type(recommendations))
+        ai_report = generate_ai_improvements(
+    dom_data,
+    css_data,
+    accessibility,
+    navigation,
+    graph,
+    journey,
+    recommendations
+)
+
+        print("✅ AI Suggestions Generated")
 
         print("➡ Generating Report...")
+
+
 
         report = generate_report(
             score,
@@ -118,19 +132,20 @@ def scan(request: URLRequest):
         print("✅ Report Generated")
 
         return {
-            "status": "success",
-            "screenshot": result["screenshot"],
-            "dom": dom_data,
-            "css": css_data,
-            "accessibility": accessibility,
-            "navigation": navigation,
-            "crawler": crawler,
-            "graph": graph,
-            "journey": journey,
-            "score": score,
-            "recommendations": recommendations,
-            "report": report
-        }
+    "status": "success",
+    "screenshot": result["screenshot"],
+    "dom": dom_data,
+    "css": css_data,
+    "accessibility": accessibility,
+    "navigation": navigation,
+    "crawler": crawler,
+    "graph": graph,
+    "journey": journey,
+    "score": score,
+    "recommendations": recommendations,
+    "ai_report": ai_report,
+    "report": report
+}
 
     except Exception as e:
 
