@@ -1,49 +1,66 @@
-def extract_css(page):
-
-    buttons = page.locator("button")
+def extract_styles(locator):
 
     result = []
 
+    count = locator.count()
 
-    for i in range(buttons.count()):
+    for i in range(count):
 
-        button = buttons.nth(i)
+        element = locator.nth(i)
 
+        style = element.evaluate(
+        """
+        el => {
 
-        style = button.evaluate(
-            """
-            el => {
+            const css = window.getComputedStyle(el);
 
-                const css =
-                window.getComputedStyle(el);
+            return {
 
+                text: el.innerText || "",
 
-                return {
+                width: css.width,
 
-                    text: el.innerText,
+                height: css.height,
 
-                    width: css.width,
+                fontSize: css.fontSize,
 
-                    height: css.height,
+                color: css.color,
 
-                    display: css.display,
+                background: css.backgroundColor,
 
-                    position: css.position,
+                display: css.display,
 
-                    fontSize: css.fontSize,
+                visibility: css.visibility,
 
-                    color: css.color
+                padding: css.padding,
 
-                }
+                margin: css.margin,
 
+                border: css.border
             }
-            """
-        )
 
+        }
+        """
+        )
 
         result.append(style)
 
+    return result
+
+
+def extract_css(page):
 
     return {
-        "buttons": result
+
+        "buttons": extract_styles(
+            page.locator("button")
+        ),
+
+        "inputs": extract_styles(
+            page.locator("input")
+        ),
+
+        "links": extract_styles(
+            page.locator("a")
+        )
     }

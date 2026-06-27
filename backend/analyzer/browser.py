@@ -1,31 +1,36 @@
 from playwright.sync_api import sync_playwright
 
-
 def capture_website(url):
 
     p = sync_playwright().start()
-
-    browser = p.chromium.launch()
-
+    browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
-    page.goto(url)
+    try:
+        page.goto(url)
+
+        html = page.content()
+
+        if "Just a moment" in html or "Checking your browser" in html:
+            browser.close()
+            p.stop()
+            raise Exception("Website is protected by Cloudflare.")   
 
 
-    html = page.content()
+        screenshot = "reports/screenshot.png"
 
+        page.screenshot(path=screenshot)
+        print(page.title())
 
-    screenshot = "reports/screenshot.png"
+        return {
+            "html": html,
+            "screenshot": screenshot,
+            "page": page,
+            "browser": browser,
+            "playwright": p
+        }
 
-    page.screenshot(
-        path=screenshot
-    )
-
-
-    return {
-        "html": html,
-        "screenshot": screenshot,
-        "page": page,
-        "browser": browser,
-        "playwright": p
-    }
+    except Exception as e:
+        browser.close()
+        p.stop()
+        raise Exception(f"Failed to load website: {str(e)}")
