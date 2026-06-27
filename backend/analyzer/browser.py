@@ -3,23 +3,29 @@ from playwright.sync_api import sync_playwright
 
 def capture_website(url):
 
-    with sync_playwright() as p:
+    p = sync_playwright().start()
 
-        browser = p.chromium.launch()
+    browser = p.chromium.launch()
 
-        page = browser.new_page()
+    page = browser.new_page()
 
-        page.goto(url)
+    page.goto(url)
 
-        html = page.content()
 
-        page.screenshot(
-            path="reports/screenshot.png"
-        )
+    html = page.content()
 
-        browser.close()
 
-        return {
-            "html": html,
-            "screenshot": "reports/screenshot.png"
-        }
+    screenshot = "reports/screenshot.png"
+
+    page.screenshot(
+        path=screenshot
+    )
+
+
+    return {
+        "html": html,
+        "screenshot": screenshot,
+        "page": page,
+        "browser": browser,
+        "playwright": p
+    }
