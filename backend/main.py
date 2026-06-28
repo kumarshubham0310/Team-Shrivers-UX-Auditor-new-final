@@ -13,9 +13,15 @@ from analyzer.scoring import calculate_score
 from analyzer.recommendations import generate_recommendations
 from analyzer.report import generate_report
 from analyzer.ai_suggestions import generate_ai_improvements
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class URLRequest(BaseModel):
     url: str

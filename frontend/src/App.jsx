@@ -7,6 +7,9 @@ function App() {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [activeView, setActiveView] = useState('Audit');
   const [url, setUrl] = useState('stripe.com/pricing');
+  const [loading, setLoading] = useState(false);
+
+  const [auditResult, setAuditResult] = useState(null);
   const [issues] = useState([
     {
       id: 1,
@@ -167,29 +170,69 @@ function App() {
     Low: issues.filter((issue) => issue.severity === 'Low').length,
   };
 
-  const handleRunAudit = () => {
-    console.log('Running audit for:', url);
-  };
+  const handleRunAudit = async () => {
+
+    try {
+
+        setLoading(true);
+
+        const response = await fetch("http://127.0.0.1:8000/scan", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                url: url
+            })
+
+        });
+
+        const data = await response.json();
+
+        console.log(data);
+
+        setAuditResult(data);
+
+        alert("Audit completed!");
+
+    } catch (err) {
+
+        console.log(err);
+
+        alert("Backend not running");
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
 
   return (
     <div className="app">
       <Sidebar
-        url={url}
-        setUrl={setUrl}
-        onRunAudit={handleRunAudit}
-        issues={issues}
-        issueCounts={issueCounts}
-        selectedIssue={selectedIssue}
-        onSelectIssue={setSelectedIssue}
-        activeTab={activeView}
-        onTabChange={setActiveView}
-      />
+  url={url}
+  setUrl={setUrl}
+  onRunAudit={handleRunAudit}
+  loading={loading}
+  issues={issues}
+  issueCounts={issueCounts}
+  selectedIssue={selectedIssue}
+  onSelectIssue={setSelectedIssue}
+  activeTab={activeView}
+  onTabChange={setActiveView}
+/>
       <MainContent
-        issues={issues}
-        issue={selectedIssue || issues[0]}
-        onSelectIssue={setSelectedIssue}
-        activeView={activeView}
-      />
+  issues={issues}
+  issue={selectedIssue || issues[0]}
+  onSelectIssue={setSelectedIssue}
+  activeView={activeView}
+  auditResult={auditResult}
+/>
     </div>
   );
 }

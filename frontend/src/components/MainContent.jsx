@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import './MainContent.css';
 
-function MainContent({ issues, issue, onSelectIssue, activeView }) {
+function MainContent({
+  issues,
+  issue,
+  onSelectIssue,
+  activeView,
+  auditResult
+}) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [changedComponents, setChangedComponents] = useState([
     { id: 'cta', label: 'CTA Button', type: 'Contrast', status: 'Improved' },
@@ -11,6 +17,8 @@ function MainContent({ issues, issue, onSelectIssue, activeView }) {
     { id: 'form', label: 'Form Labels', type: 'Labels', status: 'Improved' },
   ]);
   const [selectedChange, setSelectedChange] = useState(null);
+  const selected =
+  auditResult?.recommendations?.[0];
 
   const handleDownload = () => {
     const content = `<!DOCTYPE html>
@@ -441,28 +449,45 @@ function MainContent({ issues, issue, onSelectIssue, activeView }) {
           <button className="refresh-btn">Run again</button>
         </div>
 
-        <div className="score-grid">
-          <div className="score-card">
-            <span className="score-label">Overall UX Score</span>
-            <div className="score-value">82/100</div>
-            <p>Strong visual structure, but important accessibility gaps remain.</p>
-          </div>
-          <div className="score-card">
-            <span className="score-label">Accessibility</span>
-            <div className="score-value">76/100</div>
-            <p>Keyboard and contrast issues need immediate attention.</p>
-          </div>
-          <div className="score-card">
-            <span className="score-label">Performance</span>
-            <div className="score-value">88/100</div>
-            <p>Page speed is healthy, with minor optimization opportunities.</p>
-          </div>
-          <div className="score-card">
-            <span className="score-label">Issues Found</span>
-            <div className="score-value">{issues.length}</div>
-            <p>Critical, high, medium, and low-priority issues detected.</p>
-          </div>
-        </div>
+       <>
+  <div className="score-grid">
+
+  <div className="score-card">
+    <span className="score-label">Overall UX Score</span>
+    <div className="score-value">
+      {auditResult?.score?.overall_score ?? 0}
+    </div>
+    <p>Overall user experience score.</p>
+  </div>
+
+  <div className="score-card">
+    <span className="score-label">Accessibility</span>
+    <div className="score-value">
+      {auditResult?.score?.accessibility ?? 76}/100
+    </div>
+    <p>Accessibility evaluation.</p>
+  </div>
+
+  <div className="score-card">
+    <span className="score-label">Navigation</span>
+    <div className="score-value">
+      {auditResult?.score?.navigation ?? 88}/100
+    </div>
+    <p>Navigation quality.</p>
+  </div>
+
+  <div className="score-card">
+    <span className="score-label">Recommendations</span>
+    <div className="score-value">
+      {auditResult?.recommendations?.length ?? 0}
+    </div>
+    <p>AI recommendations generated.</p>
+  </div>
+
+</div>
+
+ 
+</>
 
         <div className="audit-grid">
           <div className="issue-table-card">
@@ -479,66 +504,71 @@ function MainContent({ issues, issue, onSelectIssue, activeView }) {
                   <th>Fix</th>
                 </tr>
               </thead>
-              <tbody>
-                {issues.map((item) => (
-                  <tr
-                    key={item.id}
-                    className={item.id === issue.id ? 'selected-row' : ''}
-                    onClick={() => onSelectIssue(item)}
-                  >
-                    <td>
-                      <span className={`severity-pill ${item.severity.toLowerCase()}`}>{item.severity}</span>
-                    </td>
-                    <td>{item.title}</td>
-                    <td>{item.page}</td>
-                    <td>{item.fixSummary}</td>
-                  </tr>
-                ))}
-              </tbody>
+             <tbody>
+  {(auditResult?.recommendations || []).map((item, index) => (
+    <tr key={index}>
+      <td>
+        <span className={`severity-pill ${item.severity.toLowerCase()}`}>
+          {item.severity}
+        </span>
+      </td>
+
+      <td>{typeof item.issue === "object" ? item.issue.description : item.issue}</td>
+
+      <td>{item.category}</td>
+
+      <td>{item.recommendation}</td>
+    </tr>
+  ))}
+</tbody>
             </table>
           </div>
 
           <div className="detail-card">
-            <div className="detail-header">
-              <div>
-                <p className="eyebrow">Selected issue</p>
-                <h3>{issue.title}</h3>
-              </div>
-              <span className={`severity-pill ${issue.severity.toLowerCase()}`}>{issue.severity}</span>
-            </div>
 
-            <div className="detail-section">
-              <h4>Description</h4>
-              <p>{issue.description}</p>
-            </div>
+  <div className="detail-header">
+    <div>
+      <p className="eyebrow">AI Recommendation</p>
 
-            <div className="detail-section">
-              <h4>Why it's a problem</h4>
-              <p>{issue.why}</p>
-            </div>
+      <h3>{selected ? (typeof selected.issue === "object" ? selected.issue.description : selected.issue) : issue.title}</h3>
 
-            <div className="detail-section">
-              <h4>WCAG rule violated</h4>
-              <p>{issue.wcagRule || issue.wcag}</p>
-            </div>
+    </div>
 
-            <div className="screenshot-box">
-              <span>Screenshot preview</span>
-              <p>{issue.page} view</p>
-            </div>
+    <span
+      className={`severity-pill ${(selected?.severity || issue.severity).toLowerCase()}`}
+    >
+      {selected?.severity || issue.severity}
+    </span>
+  </div>
 
-            <div className="detail-section">
-              <h4>AI explanation</h4>
-              <p>{issue.aiExplanation}</p>
-            </div>
 
-            <div className="detail-section">
-              <h4>Generated HTML/CSS fix</h4>
-              <pre>
-                <code>{issue.fixCode}</code>
-              </pre>
-            </div>
-          </div>
+  <div className="detail-section">
+    <h4>Category</h4>
+
+    <p>
+      {selected?.category || "Accessibility"}
+    </p>
+  </div>
+
+
+  <div className="detail-section">
+    <h4>Issue Found</h4>
+
+    <p>
+      {selected ? (typeof selected.issue === "object" ? selected.issue.description : selected.issue) : issue.description}
+    </p>
+  </div>
+
+
+  <div className="detail-section">
+    <h4>AI Recommendation</h4>
+
+    <p>
+      {selected?.recommendation || issue.aiExplanation}
+    </p>
+  </div>
+
+</div>
         </div>
       </div>
     </div>
